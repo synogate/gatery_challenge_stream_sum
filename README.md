@@ -47,6 +47,8 @@ This is a list of the most important syntax constructs in gatery. See the docume
 	UInt undefined_12_wide_uint(12_b);
 	UInt undefined_16_wide_uint;
 	undefined_16_wide_uint = BitWidth(16);
+	
+	UInt another_16_wide_uint = undefined_16_wide_uint.width(); // Only copies the width, but does not connect the signals.
 ```
 
 ### Signal Naming
@@ -78,8 +80,8 @@ This is a list of the most important syntax constructs in gatery. See the docume
 	b = '0'; // false
 	b = 'X'; // undefined
 
-    b = true;  // true
-    b = false; // false
+	b = true;  // true
+	b = false; // false
 ```
 
 ```cpp
@@ -263,18 +265,18 @@ This is a list of the most important syntax constructs in gatery. See the docume
 ```cpp
 void functionA()
 {
-    // registers, memory, and code created here can automatically
-    // use clockA by accessing it from the innermost active ClockScope
+	// registers, memory, and code created here can automatically
+	// use clockA by accessing it from the innermost active ClockScope
 }
 
 void functionB()
 {
-    // Build a clock
+	// Build a clock
 	Clock clockA{{.absoluteFrequency = 1'000'000}}; // 1 MHz
-    // Use this clock while the clockScope variable exists
+	// Use this clock while the clockScope variable exists
 	ClockScope clockScope{ clockA };
 
-    functionA();
+	functionA();
 }
 ```
 
