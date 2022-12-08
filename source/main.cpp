@@ -15,12 +15,35 @@ using namespace gtry::vhdl;
 using namespace gtry::scl;
 using namespace gtry::utils; 
 
+
+/**
+ * @brief Implement the challenge here
+ * 
+ * @param enable 
+ * @return Bit 
+ */
+Bit challenge(Bit enable)
+{
+	hlim::ClockRational blinkFrequency{1, 1}; // 1Hz
+	size_t counterMax = hlim::floor(ClockScope::getClk().absoluteFrequency() / blinkFrequency);
+	UInt counter = BitWidth(utils::Log2C(counterMax+1));
+	
+	IF (enable)
+		counter += 1;
+
+	counter = reg(counter, 0);
+	HCL_NAMED(counter);
+
+	Bit ledOn = counter.msb();
+	HCL_NAMED(ledOn);
+	return ledOn;
+}
+
 int main()
 {
 	DesignScope design;
 
-	// Optional: Set target technology
-	{
+	if (true) {
 		auto device = std::make_unique<IntelDevice>();
 		device->setupCyclone10();
 		design.setTargetTechnology(std::move(device));
@@ -30,23 +53,15 @@ int main()
 	Clock clock{{.absoluteFrequency = 1'000}}; // 1KHz
 	ClockScope clockScope{ clock };
 
-	hlim::ClockRational blinkFrequency{1, 1}; // 1Hz
-	size_t counterMax = hlim::floor(clock.absoluteFrequency() / blinkFrequency);
-	UInt counter = BitWidth(utils::Log2C(counterMax+1));
 	auto enable = pinIn().setName("button");
 	
-	IF (enable)
-		counter += 1;
+	auto ledOn = challenge(enable);
 
-	counter = reg(counter, 0);
-	HCL_NAMED(counter);
-
-	Bit ledOn = counter.msb();
 	pinOut(ledOn).setName("led");
 
 	design.postprocess();
 
-	// Optional: Setup simulation
+	// Setup simulation
 	sim::ReferenceSimulator simulator;
 	simulator.compileProgram(design.getCircuit());
 
@@ -76,21 +91,22 @@ int main()
 	});
 
 
-	// Optional: Record simulation waveforms as VCD file
+	// Record simulation waveforms as VCD file
 	sim::VCDSink vcd(design.getCircuit(), simulator, "waveform.vcd");
 	vcd.addAllPins();
 	vcd.addAllSignals();
 
 
-	// Optional: VHDL export
-	VHDLExport vhdl("vhdl/");
-	vhdl.addTestbenchRecorder(simulator, "testbench", false);
-	vhdl.targetSynthesisTool(new IntelQuartus());
-	vhdl.writeProjectFile("import_IPCore.tcl");
-	vhdl.writeStandAloneProjectFile("IPCore.qsf");
-	vhdl.writeConstraintsFile("constraints.sdc");
-	vhdl.writeClocksFile("clocks.sdc");
-	vhdl(design.getCircuit());
+	if (true) {
+		// VHDL export
+		VHDLExport vhdl("vhdl/");
+		vhdl.targetSynthesisTool(new IntelQuartus());
+		vhdl.writeProjectFile("import_IPCore.tcl");
+		vhdl.writeStandAloneProjectFile("IPCore.qsf");
+		vhdl.writeConstraintsFile("constraints.sdc");
+		vhdl.writeClocksFile("clocks.sdc");
+		vhdl(design.getCircuit());
+	}
 
 	// Run simulation
 	simulator.powerOn();

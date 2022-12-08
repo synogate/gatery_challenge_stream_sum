@@ -8,7 +8,7 @@
             "name": "(gdb) gatery-template",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/linux-x86_64-Debug/gatery-template",
+            "program": "${workspaceFolder}/bin/linux-x86_64-Debug/gatery-challenge",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin/linux-x86_64-Debug/",
@@ -21,46 +21,8 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
-            ]
-        },    
-        {
-            "name": "(gdb) Unit test gatery",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/linux-x86_64-Debug/gatery-frontend-test",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin/linux-x86_64-Debug/",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
-            "name": "(gdb) Unit test gatery SCL",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/linux-x86_64-Debug/gatery-scl-test",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin/linux-x86_64-Debug/",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            ],
+            "preLaunchTask": "buildAllDebug"
         }
-
     ]
 }

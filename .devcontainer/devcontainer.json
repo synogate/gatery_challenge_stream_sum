@@ -19,16 +19,17 @@
 		"C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 		"makefile.launchConfigurations": [
 			{
-				"cwd": "/workspaces/gatery_template/bin/linux-x86_64-Debug",
-				"binaryPath": "/workspaces/gatery_template/bin/linux-x86_64-Debug/gatery-template",
+				"cwd": "/workspaces/gatery_challenge/bin/linux-x86_64-Debug",
+				"binaryPath": "/workspaces/gatery_challenge/bin/linux-x86_64-Debug/gatery-challenge",
 				"binaryArgs": []
 			}
-		]		
+		]
 	},
 	// Visual Studio Code extensions (plugins) to be installed.
 	"extensions": [
 		"ms-vscode.cpptools",
-		"ms-vscode.makefile-tools"
+		"ms-vscode.makefile-tools",
+		"wavetrace.wavetrace"
 	],
 	// Command to be executed after the container is created.
 	"postCreateCommand": ".devcontainer/post.sh",

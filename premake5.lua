@@ -1,10 +1,10 @@
-workspace "gatery-template"
+workspace "gatery-challenge"
     configurations { "Debug", "Release" }
     architecture "x64"
     symbols "On"
     flags { "MultiProcessorCompile" }
     cppdialect "C++latest"
-    startproject "gatery-template"
+    startproject "gatery-challenge"
 
     targetdir "%{wks.location}/bin/%{cfg.system}-%{cfg.architecture}-%{cfg.longname}"
     objdir "%{wks.location}/obj/%{cfg.system}-%{cfg.architecture}-%{cfg.longname}"
@@ -27,7 +27,7 @@ workspace "gatery-template"
             "/usr/local/vcpkg/installed/x64-linux/lib/"
         }
 
-    project "gatery-template"
+    project "gatery-challenge"
         kind "ConsoleApp"
         links { "gatery"}
         files { "source/**" }
