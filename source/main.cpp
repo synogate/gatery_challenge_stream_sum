@@ -8,6 +8,9 @@
 #include <gatery/simulation/waveformFormats/VCDSink.h>
 #include <gatery/simulation/ReferenceSimulator.h>
 
+#include <gatery/scl/stream/Stream.h>
+
+
 #include <iostream>
 
 using namespace gtry;
@@ -17,26 +20,36 @@ using namespace gtry::utils;
 
 
 /**
- * @brief Implement the challenge here
- * 
- * @param enable 
- * @return Bit 
+ * @brief Implement the challenge here.
+ * @details This function receives a stream of unsigned integer numbers with ready-valid handshake signals.
+ * The function is to sum N consecutive numbers (where N is a construction time / generic parameter) and output these sums
+ * as an output stream, again with ready-valid handshake signals.
+ * So for every N transfers on the input stream there is to be one transfer (of the sum) on the output stream.
+ *
+ * The input stream may become in-valid at any point, even within the burst of integers to be summed.
+ * The output stream may become un-ready at any point as well.
  */
-Bit challenge(Bit enable)
+RvStream<UInt> sum_N_numbers(RvStream<UInt> &inStream, size_t N)
 {
-	hlim::ClockRational blinkFrequency{1, 1}; // 1Hz
-	size_t counterMax = hlim::floor(ClockScope::getClk().absoluteFrequency() / blinkFrequency);
-	UInt counter = BitWidth(utils::Log2C(counterMax+1));
-	
-	IF (enable)
-		counter += 1;
+	HCL_NAMED(inStream);
 
-	counter = reg(counter, 0);
-	HCL_NAMED(counter);
+	RvStream<UInt> outStream;
 
-	Bit ledOn = counter.msb();
-	HCL_NAMED(ledOn);
-	return ledOn;
+	// Simply connecting input and output stream to demonstrate accessors. This needs to be changed.
+
+	*outStream = *inStream; // *stream returns the payload of the stream (the integer numbers). It is assignable.
+	valid(outStream) = valid(inStream); // valid(...) returns the valid bit of the stream. It is assignable.
+	ready(inStream) = ready(outStream); // ready(...) returns the ready bit of the stream. It is assignable.
+
+	/*
+		Other useful syntax constructs:
+
+		`transfer(stream)` is a shorthand for `ready(stream) & valid(stream)`
+		`stream->width()` calls width() on the underlying payload of the stream, i.e. returns the bit width of the integer.
+	*/
+
+	HCL_NAMED(outStream);
+	return outStream;
 }
 
 int main()
@@ -50,46 +63,78 @@ int main()
 	}
 
 	// Build circuit
-	Clock clock{{.absoluteFrequency = 1'000}}; // 1KHz
+	Clock clock{{.absoluteFrequency = 1'000'000}};
 	ClockScope clockScope{ clock };
 
-	auto enable = pinIn().setName("button");
-	
-	auto ledOn = challenge(enable);
+	RvStream<UInt> inStream{ 8_b };
+	pinIn(inStream, "input");
 
-	pinOut(ledOn).setName("led");
+	const size_t N = 5;
+
+	auto outStream = sum_N_numbers(inStream, N);
+
+	pinOut(outStream, "output");
 
 	design.postprocess();
+
+	design.visualize("test");
 
 	// Setup simulation
 	sim::ReferenceSimulator simulator;
 	simulator.compileProgram(design.getCircuit());
 
-	simulator.addSimulationProcess([=, &clock]()->SimProcess{
+	std::queue<std::array<size_t, N>> data;
+	simulator.addSimulationProcess([=, &data, &inStream, &outStream, &clock]()->SimProcess{
 
-		fork([=, &clock]()->SimProcess{
+		std::mt19937 rng(1337);
+
+		// Data generator
+		fork([=, &inStream, &clock, &data, &rng]()->SimProcess{
+			co_await OnClk(clock);
+
 			while (true) {
-				co_await OnClk(clock);
+				std::array<size_t, N> elems;
+				for (auto i : Range(N)) {
+					elems[i] = rng() % 256;
+					simu(*inStream) = elems[i];
 
-				if (simu(ledOn) == '1')
-					std::cout << "LED is on" << std::endl;
-				else if (simu(ledOn) == '0')
-					std::cout << "LED is off" << std::endl;
-				else
-					std::cout << "LED is undefined" << std::endl;
+					co_await scl::performTransferWait(inStream, clock);
+				}
+
+				data.push(elems);
 			}
 		});
 
+		// Chaos monkey on ready and valid
+		fork([=, &inStream, &outStream, &clock, &data, &rng]()->SimProcess{
+			simu(valid(inStream)) = '0';
+			simu(ready(outStream)) = '0';
+			while (true) {
+				co_await OnClk(clock);
+				simu(valid(inStream)) = (rng() & 1) == 1;
+				simu(ready(outStream)) = (rng() & 1) == 1;
+			}
+		});
 
-		std::cout << "Disabling" << std::endl;
-		simu(enable) = '0';
-		for ([[maybe_unused]]auto i : Range(50))
-			co_await AfterClk(clock);
+		// Actually check the output
+		while (true) {
+			co_await scl::performTransferWait(outStream, clock);
 
-		std::cout << "Enabling" << std::endl;
-		simu(enable) = '1';
+			if (data.empty())
+				std::cerr << "Output returned sum but no complete tuple was inserted for it at " << toNanoseconds(getCurrentSimulationTime()) << " ns." << std::endl;
+			else {
+				auto last = data.back();
+				data.pop();
+
+				size_t expectedSum = 0;
+				for (auto s : last)
+					expectedSum += s;
+
+				if (simu(*outStream) != expectedSum)
+					std::cerr << "Output returned the wrong sum at " << toNanoseconds(getCurrentSimulationTime()) << " ns." << std::endl;
+			}
+		}
 	});
-
 
 	// Record simulation waveforms as VCD file
 	sim::VCDSink vcd(design.getCircuit(), simulator, "waveform.vcd");
@@ -110,7 +155,10 @@ int main()
 
 	// Run simulation
 	simulator.powerOn();
-	simulator.advance(hlim::ClockRational(5000,1'000));
+	simulator.advance(hlim::ClockRational(200,1'000'000));
+
+	if (data.size() > 1)
+		std::cerr << "Insufficient sums returned." << std::endl;
 
 	return 0;
 }

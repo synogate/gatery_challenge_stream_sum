@@ -2,9 +2,12 @@
 
 ![Gatery logo](https://github.com/synogate/gatery/raw/master/doc/gatery_logo_500.svg)
 
-In this coding challenge, the goal is to implement ...
+In this coding challenge, the goal is to implement a stream module that sums integer numbers.
+A function receives a stream of unsigned integer numbers with ready-valid handshake signals.
+The function is to sum N consecutive numbers and output these sums as an output stream, again with ready-valid handshake signals.
+In other words, for every N transfers on the input stream there is to be one transfer (of the sum) on the output stream.
 
-Details are listed in the main.cpp file.
+For details, find the function `RvStream<UInt> sum_N_numbers(RvStream<UInt> &inStream, size_t N)` in the `source/main.cpp` file.
 
 ## Getting Started
 
