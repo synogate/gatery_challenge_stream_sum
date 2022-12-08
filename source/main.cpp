@@ -77,8 +77,6 @@ int main()
 
 	design.postprocess();
 
-	design.visualize("test");
-
 	// Setup simulation
 	sim::ReferenceSimulator simulator;
 	simulator.compileProgram(design.getCircuit());
