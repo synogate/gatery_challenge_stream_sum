@@ -13,7 +13,7 @@ For details, find the function `RvStream<UInt> sum_N_numbers(RvStream<UInt> &inS
 
 The easiest way is to solve this project in a github codespace. You will need a github account and the automated process to set up the VM takes about 20 minutes.
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](   )
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=challenge_stream_sum&repo=575999243)
 
 Alternatively, you can clone this repository locally and follow the instructions in the [main gatery repository](https://github.com/synogate/gatery) to set up the dependencies.
 
