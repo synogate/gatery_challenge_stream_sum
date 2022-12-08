@@ -36,7 +36,8 @@
 	"customizations": {
 	"codespaces": {
 		"openFiles": [
-			"source/main.cpp"
+			"source/main.cpp",
+			"README.md"
 		]
 	}
 	}
