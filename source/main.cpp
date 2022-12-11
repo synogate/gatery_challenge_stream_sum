@@ -69,7 +69,7 @@ int main()
 	RvStream<UInt> inStream{ 8_b };
 	pinIn(inStream, "input");
 
-	const size_t N = 5;
+	constexpr size_t N = 5;
 
 	auto outStream = sum_N_numbers(inStream, N);
 
